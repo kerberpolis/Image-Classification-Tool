@@ -1,1 +1,1 @@
-# Image-Classification-Tool
+# Image Classification Tool

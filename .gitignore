@@ -1,0 +1,12 @@
+__pycache__
+.idea/
+*.PNG
+*.png
+*.jpg
+*.JPG
+*.tif
+*.xlsx
+*.csv
+*.log
+build
+dist
