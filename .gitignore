@@ -8,5 +8,6 @@ __pycache__
 *.xlsx
 *.csv
 *.log
+*.pdf
 build
 dist

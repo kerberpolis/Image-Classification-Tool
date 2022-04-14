@@ -5,7 +5,9 @@ from Components.ImageFrame import ImageFrame
 from Components.Menu import Menu
 from Components.SavingWidget import SavingWidget
 from Components.Sidebar import Sidebar
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
+import glob
+from PIL import Image
 
 
 class Main(tk.Frame):
@@ -16,38 +18,39 @@ class Main(tk.Frame):
         self.default_title = 'Image Classification Tool'
         self.parent.title(self.default_title)
         self.parent.geometry(f'{self.width}x{self.height}')  # size of the main window
-        self.parent.minsize(1200, 800)
-        self.parent.rowconfigure(0, weight=1)  # make the application widget expandable
-        self.parent.columnconfigure(0, weight=1)
+        self.pack()
+        self.parent.minsize(1000, 600)
+        # self.parent.rowconfigure(0, weight=1)  # make the application widget expandable
+        # self.parent.columnconfigure(0, weight=1)
         self.previous_state = None
 
         self.keycode = {}  # init key codes
         if os.name == 'nt':  # Windows OS
             self.keycode = {
-                'o': 79,
-                'w': 87,
                 's': 83,
+                'w': 87,
+
             }
         elif os.name == 'posix':  # Linux OS
             self.keycode = {
-                'o': 32,
-                'w': 25,
                 's': 39,
+                'w': 25,
             }
-        self.shortcuts = [['Ctrl+O', self.keycode['o'], self.open_image],  # 0 open image
-                          ['Ctrl+W', self.keycode['w'], self.close_image],  # 1 close image
-                          ['Ctrl+S', self.keycode['s'], self.save_image],  # 2 save polygons of the image
-                          ]
+
+        self.shortcuts = [
+            ['Ctrl+S', self.keycode['s'], self.save_image],  # 1 save polygons of the image
+            ['Ctrl+W', self.keycode['w'], self.close_image],  # 1 save polygons of the image
+        ]
         self.parent.bind('<Key>', lambda event: self.master.after_idle(self.keystroke, event))
+        self.images = []
 
         self.create_menu()
+        self.im_frame = ImageFrame(self, width=self.width*0.5, height=self.height*0.5,
+                                   bd=1)
+        self.sidebar = Sidebar(self, width=self.width * 0.2, height=200, bd=1)
 
-        self.parent.bind("<Configure>", self.resize)
-
-    def resize(self, event):
-        if self.width != event.width or self.height != event.height:
-            # print(f'{event.widget}=: {event.height}=, {event.width}=\n')
-            self.width, self.height = event.width, event.height
+        self.im_frame.pack(side='left', fill='none')
+        self.sidebar.pack(side='right', fill='y')
 
     def keystroke(self, event):
         """ Language independent handle events from the keyboard
@@ -68,28 +71,60 @@ class Main(tk.Frame):
         self.menu = Menu(self, self.shortcuts, self.functions)
         self.parent.configure(menu=self.menu.menubar)
 
-    def open_image(self):
+    def initialise_image(self):
+        if self.images:
+            self.im_frame.image_number = 0
+            self.sidebar.next_image()
+        else:
+            logging.info('Error loading images')
+        return
+
+    def ask_open_folder(self):
+        directory = filedialog.askdirectory(initialdir="C:/")
+
+        if directory is None: return
+        self.images = []
+
+        filepaths = [path for list in [glob.glob(f'{directory}/*.%s' % ext) for ext in ["jpg", "jpeg", "png"]] for path in list]
+        for filepath in filepaths:
+            try:
+                Image.open(filepath)
+                self.images.append(filepath)
+            except Exception:
+                msg = f'Cannot open selected file {filepath}. Not on image.'
+                logging.info(msg)
+
+        self.initialise_image()
+
+    def ask_open_image(self):
         """ Open image """
         image_file = filedialog.askopenfile(initialdir="C:/",
                                             filetypes=(
-                                              ('All Files', '.*'), ('All Files', '.*'),
-                                              ('image files', ('.png', '.jpg', 'jpeg', '.tiff', '.tif')))
+                                                ('Image files', '.png .jpg .jpeg'),
+                                                ('All Files', '.*'))
                                             )
         if image_file is None: return
-        path = image_file.name
+        self.images = []
 
-        # open image
+        self.images.append(image_file.name)
+        self.initialise_image()
+
+    def open_image(self, filename):
+        """ Open image """
         try:
-            image = Image.open(path)
-            self.parent.title(self.default_title + ': {}'.format(path))  # change window title
+            # image = Image.open(path)
+            self.parent.title(self.default_title + ': {}'.format(filename))  # change window title
+            self.im_frame.set_canvas_image(filename)
         except Exception:
-            msg = f'Cannot open selected file {path}'
+            msg = f'Cannot open selected file {filename}'
             logging.info(msg)
-            tk.messagebox.showwarning(title="Error",
-                                      message=msg)
+            messagebox.showwarning(title="Error", message=msg)
 
     def close_image(self):
-        pass
+        """ Close image """
+        self.im_frame.clear_canvas()
+        self.parent.title(self.default_title)  # set default window title
+        self.images = []
 
     def save_image(self):
         pass
