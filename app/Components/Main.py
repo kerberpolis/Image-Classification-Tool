@@ -45,12 +45,12 @@ class Main(tk.Frame):
         self.images = []
 
         self.create_menu()
-        self.im_frame = ImageFrame(self, width=self.width*0.5, height=self.height*0.5,
+        self.im_frame = ImageFrame(self, width=self.width*0.9, height=self.height*0.9,
                                    bd=1)
         self.sidebar = Sidebar(self, width=self.width * 0.2, height=200, bd=1)
 
-        self.im_frame.pack(side='left', fill='none')
-        self.sidebar.pack(side='right', fill='y')
+        self.im_frame.pack(side='top', fill='both')
+        self.sidebar.pack(side='bottom', fill='x')
 
     def keystroke(self, event):
         """ Language independent handle events from the keyboard

@@ -27,7 +27,7 @@ class Sidebar(tk.Frame):
         self.clear_button.grid(row=1, column=0)
 
         self.draw_button = tk.Button(self, font=('calibre', 10, 'normal'),
-                                     text="Draw", command=self.parent.im_frame.show_drawing_image)
+                                     text="Draw", command=self.start_drawing)
         self.draw_button.grid(row=1, column=1)
 
         self.pen_width_label = tk.Label(self, text='Pen Width: ', font=('', 15)).grid(row=2, column=0)
@@ -78,3 +78,11 @@ class Sidebar(tk.Frame):
             self.parent.im_frame.image_number = len(self.parent.images)
             image_path = self.parent.images[-1]
             self.parent.open_image(image_path)
+
+    def start_drawing(self):
+        self.draw_button.configure(text="Stop Drawing", command=self.stop_drawing)
+        self.parent.im_frame.show_drawing_image()
+
+    def stop_drawing(self):
+        self.draw_button.configure(text="Draw", command=self.start_drawing)
+        self.parent.im_frame.hide_drawing_image()

@@ -53,6 +53,7 @@ class ImageFrame(tk.Frame):
 
     def clear_canvas(self):
         self.canvas.delete('mask')
+        self.canvas.delete(self.canvas._draw_rect)
 
     def save_images(self):
         pass
@@ -64,8 +65,7 @@ class ImageFrame(tk.Frame):
         pass
 
     def set_mouse_bindings(self):
-        self.canvas.bind("<Motion>", self.move_mouse)
-        self.canvas.bind("<Leave>", self.remove_cursor)
+        pass
 
     def move_mouse(self, event):
         if self.image:
@@ -99,26 +99,55 @@ class ImageFrame(tk.Frame):
         # self.canvas._im_draw_id = self.canvas.create_image((self.bbox[0], self.bbox[1]),
         #                                                    image=self.canvas._im_tk,
         #                                                    anchor='nw')
+
+        self.create_transparent_window(0, 0, int(self.canvas_w), int(self.canvas_h),
+                                       fill='#d3d3d3', alpha=0.4)
+
         self.canvas.bind("<B1-Motion>", lambda e: self.paint(e))
         self.canvas.bind("<ButtonRelease-1>", self.reset)
         self.canvas.bind("<ButtonPress-1>", lambda e: self.paint(e))
+        self.canvas.bind("<Motion>", self.move_mouse)
+        self.canvas.bind("<Leave>", self.remove_cursor)
+
+    def hide_drawing_image(self):
+        self.canvas.unbind("<B1-Motion>")
+        self.canvas.unbind("<ButtonRelease-1>")
+        self.canvas.unbind("<ButtonPress-1>")
+        self.canvas.unbind("<Motion>")
+        self.canvas.unbind("<Leave>")
+
+        self.clear_canvas()
+
+    def create_transparent_window(self, x1, y1, x2, y2, **kwargs):
+        if 'alpha' in kwargs:
+            alpha = int(kwargs.pop('alpha') * 255)
+            fill = kwargs.pop('fill')
+            fill = tuple(int(item % 256) for item in self.parent.winfo_rgb(fill)) + (alpha,)
+            im = Image.new(mode='RGBA', size=(x2 - x1, y2 - y1), color=fill)
+            self.canvas._im_tk = ImageTk.PhotoImage(im)
+            self.canvas._draw_rect = self.canvas.create_image(x1, y1, image=self.canvas._im_tk, anchor='nw')
+        self.canvas._draw_rect = self.canvas.create_rectangle(x1, y1, x2, y2, **kwargs)
+
 
     def RBGAImage(self, path):
         return Image.open(path).convert("RGBA")
 
-    def paint(self, e):
-        if self.old_x and self.old_y:
-            self.canvas.create_line(self.old_x, self.old_y, e.x, e.y, width=self.penwidth,
-                                    fill='black', capstyle=tk.ROUND, smooth=True, tags='mask')
-        else:
-            x_max = e.x + self.penwidth / 2
-            x_min = e.x - self.penwidth / 2
-            y_max = e.y + self.penwidth / 2
-            y_min = e.y - self.penwidth / 2
-            self.canvas.create_oval(x_min, y_max, x_max, y_min, fill='black',  tags='mask')
+    def paint(self, event):
+        x, y = event.x, event.y
 
-        self.old_x = e.x
-        self.old_y = e.y
+        if event.type.name == 'Motion':
+            if hasattr(self.canvas, '_cursor_id'):
+                self.canvas.delete(self.canvas._cursor_id)
+
+        if self.old_x and self.old_y:
+            self.canvas.create_line(self.old_x, self.old_y, x, y, width=self.penwidth,
+                                    capstyle=tk.ROUND, smooth=True, tags='mask', stipple='gray50')
+        else:
+            self.canvas.create_line(x, y, x, y, width=self.penwidth,
+                                    capstyle=tk.ROUND, smooth=True, tags='mask', stipple='gray50')
+
+        self.old_x = x
+        self.old_y = y
 
     def reset(self, e):
         self.old_x = None
