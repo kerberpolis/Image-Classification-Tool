@@ -26,6 +26,16 @@ class Sidebar(tk.Frame):
                                       text="Clear", command=self.parent.im_frame.clear_canvas)
         self.clear_button.grid(row=1, column=0)
 
+        self.draw_button = tk.Button(self, font=('calibre', 10, 'normal'),
+                                     text="Draw", command=self.parent.im_frame.show_drawing_image)
+        self.draw_button.grid(row=1, column=1)
+
+        self.pen_width_label = tk.Label(self, text='Pen Width: ', font=('', 15)).grid(row=2, column=0)
+        self.slider = tk.Scale(self, from_=5, to=100, command=self.parent.im_frame.change_pen_width,
+                               orient=tk.HORIZONTAL)
+        self.slider.set(5)
+        self.slider.grid(row=2, column=1, ipadx=30)
+
     def next_image(self):
         if not self.parent.images:
             self.parent.ask_open_folder()
