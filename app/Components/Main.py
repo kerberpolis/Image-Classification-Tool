@@ -52,6 +52,9 @@ class Main(tk.Frame):
         self.im_frame.pack(side='top', fill='both')
         self.sidebar.pack(side='bottom', fill='x')
 
+        directory = '/home/vanguard/projects/Image-Classification-Tool/images'
+        self.ask_open_folder(directory=directory)
+
     def keystroke(self, event):
         """ Language independent handle events from the keyboard
             Link1: http://infohost.nmt.edu/tcc/help/pubs/tkinter/web/key-names.html
@@ -79,8 +82,9 @@ class Main(tk.Frame):
             logging.info('Error loading images')
         return
 
-    def ask_open_folder(self):
-        directory = filedialog.askdirectory(initialdir="C:/")
+    def ask_open_folder(self, directory=None):
+        if not directory:
+            directory = filedialog.askdirectory(initialdir="C:/")
 
         if directory is None: return
         self.images = []

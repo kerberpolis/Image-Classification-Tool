@@ -30,6 +30,10 @@ class Sidebar(tk.Frame):
                                      text="Draw", command=self.start_drawing)
         self.draw_button.grid(row=1, column=1)
 
+        self.save_button = tk.Button(self, font=('calibre', 10, 'normal'),
+                                     text="Save", command=self.parent.im_frame.save_mask)
+        self.save_button.grid(row=1, column=2)
+
         self.pen_width_label = tk.Label(self, text='Pen Width: ', font=('', 15)).grid(row=2, column=0)
         self.slider = tk.Scale(self, from_=5, to=100, command=self.parent.im_frame.change_pen_width,
                                orient=tk.HORIZONTAL)
@@ -81,8 +85,8 @@ class Sidebar(tk.Frame):
 
     def start_drawing(self):
         self.draw_button.configure(text="Stop Drawing", command=self.stop_drawing)
-        self.parent.im_frame.show_drawing_image()
+        self.parent.im_frame.start_drawing()
 
     def stop_drawing(self):
         self.draw_button.configure(text="Draw", command=self.start_drawing)
-        self.parent.im_frame.hide_drawing_image()
+        self.parent.im_frame.stop_drawing()
