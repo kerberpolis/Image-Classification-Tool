@@ -8,7 +8,10 @@ class MarkingController:
         return self.markings
 
     def get_image_markings(self, image_number):
-        return self.markings[image_number]
+        try:
+            return self.markings[image_number]
+        except KeyError:
+            return []
 
     def add_marking(self, marking):
         # just add to dict without checking, performance issues
