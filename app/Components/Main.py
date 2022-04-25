@@ -52,9 +52,6 @@ class Main(tk.Frame):
         self.im_frame.pack(side='top', fill='both')
         self.sidebar.pack(side='bottom', fill='x')
 
-        directory = '/home/vanguard/projects/Image-Classification-Tool/images'
-        self.ask_open_folder(directory=directory)
-
     def keystroke(self, event):
         """ Language independent handle events from the keyboard
             Link1: http://infohost.nmt.edu/tcc/help/pubs/tkinter/web/key-names.html
@@ -116,9 +113,9 @@ class Main(tk.Frame):
     def open_image(self, filename):
         """ Open image """
         try:
-            # image = Image.open(path)
             self.parent.title(self.default_title + ': {}'.format(filename))  # change window title
             self.im_frame.set_canvas_image(filename)
+            self.im_frame.set_canvas_markings()
         except Exception:
             msg = f'Cannot open selected file {filename}'
             logging.info(msg)
@@ -131,7 +128,15 @@ class Main(tk.Frame):
         self.images = []
 
     def save_image(self):
-        pass
+        im_path = self.images[self.im_frame.image_number - 1]
+        im_filename = im_path.split('.')[0].split('/')[-1]
+
+        new_path = 'new_images/'
+        image_filepath = f'{new_path}{im_filename}.png'
+        mask_filepath = f'{new_path}{im_filename.split(".")[0]}_mask.png'
+
+        self.im_frame.image.save(image_filepath)
+        self.im_frame.save_mask(mask_filepath)
 
     def destroy(self):
         """ Destroy the main frame object and release all resources """

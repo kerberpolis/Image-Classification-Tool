@@ -1,29 +1,28 @@
 
 
-
-
 class MarkingController:
     def __init__(self, *args, **kwargs):
         self.markings = {}
 
-    def add_marking(self, new_marking):
-        if self.markings:
-            for marking_id, marking in self.markings.copy().items():
-                if new_marking['coordinates'] == marking['coordinates']:
-                    print('marking already in markings, will not add')
-                    return
-                print(new_marking)
-                self.markings[new_marking['marking_id']] = new_marking
-                print(self.markings)
+    def get_markings(self):
+        return self.markings
+
+    def get_image_markings(self, image_number):
+        return self.markings[image_number]
+
+    def add_marking(self, marking):
+        # just add to dict without checking, performance issues
+        if marking['image'] in self.markings.keys():
+            self.markings[marking['image']].append(marking)
         else:
-            self.markings[new_marking['marking_id']] = new_marking
+            self.markings[marking['image']] = [marking]
 
     def remove_marking(self, marking_id):
         if marking_id in self.markings.keys():
             del self.markings[marking_id]
 
-    def get_markings(self):
-        return self.markings
-
     def delete_all_markings(self):
         self.markings = {}
+
+    def delete_image_markings(self, image_number):
+        self.markings[image_number] = []

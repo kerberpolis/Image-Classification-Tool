@@ -15,7 +15,7 @@ class Sidebar(tk.Frame):
         self.prev_button.grid(row=0, column=2)
 
         self.first_button = tk.Button(self, font=('calibre', 10, 'normal'),
-                                     text="First", command=self.go_to_first)
+                                      text="First", command=self.go_to_first)
         self.first_button.grid(row=0, column=0)
 
         self.last_button = tk.Button(self, font=('calibre', 10, 'normal'),
@@ -23,7 +23,7 @@ class Sidebar(tk.Frame):
         self.last_button.grid(row=0, column=4)
 
         self.clear_button = tk.Button(self, font=('calibre', 10, 'normal'),
-                                      text="Clear", command=self.parent.im_frame.clear_canvas)
+                                      text="Clear", command=self.parent.im_frame.reset_mask)
         self.clear_button.grid(row=1, column=0)
 
         self.draw_button = tk.Button(self, font=('calibre', 10, 'normal'),
@@ -31,7 +31,7 @@ class Sidebar(tk.Frame):
         self.draw_button.grid(row=1, column=1)
 
         self.save_button = tk.Button(self, font=('calibre', 10, 'normal'),
-                                     text="Save", command=self.parent.im_frame.save_mask)
+                                     text="Save", command=self.parent.save_image)
         self.save_button.grid(row=1, column=2)
 
         self.pen_width_label = tk.Label(self, text='Pen Width: ', font=('', 15)).grid(row=2, column=0)
