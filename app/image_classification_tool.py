@@ -25,8 +25,8 @@ if __name__ == "__main__":
     root = tk.Tk(className=title)
     root.title(title)
 
-    screen_width = root.winfo_screenwidth()
-    screen_height = root.winfo_screenheight()
+    screen_width = root.winfo_screenwidth()/3
+    screen_height = root.winfo_screenheight()/3
 
     Main(root, width=screen_width, height=screen_height)
     root.mainloop()
