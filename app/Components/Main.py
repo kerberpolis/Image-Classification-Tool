@@ -113,7 +113,7 @@ class Main(tk.Frame):
     def open_image(self, filename):
         """ Open image """
         try:
-            self.parent.title(self.default_title + ': {}'.format(filename))  # change window title
+            self.parent.title(self.default_title + ': {}'.format(filename.split('/')[-1]))  # change window title
             self.im_frame.set_canvas_image(filename)
             self.im_frame.set_canvas_markings()
         except Exception:
