@@ -20,9 +20,19 @@ class MarkingController:
         else:
             self.markings[marking['image']] = [marking]
 
-    def remove_marking(self, marking_id):
+    def remove_marking_by_id(self, marking_id):
         if marking_id in self.markings.keys():
             del self.markings[marking_id]
+
+    def remove_marking_by_coordinates(self, image_number, x, y):
+        try:
+            image_markings = self.markings[image_number]
+            for marking in image_markings:
+                cx1, cy1, cx2, cy2 = marking['coordinates']
+                marking_id = marking['marking_id']
+                return marking_id
+        except KeyError:
+            pass
 
     def delete_all_markings(self):
         self.markings = {}

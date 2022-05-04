@@ -25,14 +25,26 @@ class Sidebar(tk.Frame):
         self.clear_button = tk.Button(self, font=('calibre', 10, 'normal'),
                                       text="Clear", command=self.parent.im_frame.reset_mask)
         self.clear_button.grid(row=1, column=0)
+        self.clear_button["state"] = 'disabled'
 
         self.draw_button = tk.Button(self, font=('calibre', 10, 'normal'),
                                      text="Draw", command=self.start_drawing)
         self.draw_button.grid(row=1, column=1)
+        self.draw_button["state"] = 'disabled'
+
+        self.erase_button = tk.Button(self, font=('calibre', 10, 'normal'),
+                                      text="Erase", command=self.start_erasing)
+        self.erase_button.grid(row=1, column=2)
+        self.erase_button["state"] = 'disabled'
+
+        self.undo_button = tk.Button(self, font=('calibre', 10, 'normal'),
+                                     text="Undo", command=self.parent.im_frame.undo)
+        self.undo_button.grid(row=1, column=3)
+        self.undo_button["state"] = 'disabled'
 
         self.save_button = tk.Button(self, font=('calibre', 10, 'normal'),
                                      text="Save", command=self.parent.save_image)
-        self.save_button.grid(row=1, column=2)
+        self.save_button.grid(row=1, column=4)
 
         self.pen_width_label = tk.Label(self, text='Pen Width: ', font=('', 15)).grid(row=2, column=0)
         self.slider = tk.Scale(self, from_=5, to=100, command=self.parent.im_frame.change_pen_width,
@@ -87,6 +99,24 @@ class Sidebar(tk.Frame):
         self.draw_button.configure(text="Stop Drawing", command=self.stop_drawing)
         self.parent.im_frame.start_drawing()
 
+        self.clear_button["state"] = 'normal'
+        self.erase_button["state"] = 'normal'
+        self.undo_button["state"] = 'normal'
+
     def stop_drawing(self):
         self.draw_button.configure(text="Draw", command=self.start_drawing)
         self.parent.im_frame.stop_drawing()
+
+        self.clear_button["state"] = 'disabled'
+        self.erase_button["state"] = 'disabled'
+        self.undo_button["state"] = 'disabled'
+
+        self.stop_erasing()
+
+    def start_erasing(self):
+        self.erase_button.configure(text="Stop Erasing", command=self.stop_erasing)
+        self.parent.im_frame.start_removing()
+
+    def stop_erasing(self):
+        self.erase_button.configure(text="Erase", command=self.start_erasing)
+        self.parent.im_frame.stop_removing()

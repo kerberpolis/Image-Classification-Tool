@@ -18,7 +18,7 @@ class ImageFrame(tk.Frame):
         self.image, self.imageid, self.im_width, self.im_height, self.bbox = None, None, None, None, None
         self.image_number = 0
         self.penwidth = 10
-        self.is_drawing = False
+        self.is_drawing, self.is_erasing = False, False
         self.old_x, self.old_y = None, None
 
         self.marking_controller = MarkingController()
@@ -190,6 +190,7 @@ class ImageFrame(tk.Frame):
 
     def start_drawing(self):
         if self.image:
+            self.stop_removing()
             self.is_drawing = True
 
             self.create_transparent_window(0, 0, int(self.canvas_w), int(self.canvas_h),
@@ -215,6 +216,17 @@ class ImageFrame(tk.Frame):
 
             self.clear_canvas()
 
+    def start_removing(self):
+        if self.image:
+            self.is_erasing = True
+
+            self.canvas.bind("<B1-Motion>", lambda e: self.erase(e))
+            self.canvas.bind("<ButtonPress-1>", lambda e: self.erase(e))
+
+    def stop_removing(self):
+        if self.image:
+            self.is_erasing = False
+
     def create_transparent_window(self, x1, y1, x2, y2, **kwargs):
         if 'alpha' in kwargs:
             alpha = int(kwargs.pop('alpha') * 255)
@@ -222,12 +234,24 @@ class ImageFrame(tk.Frame):
             fill = tuple(int(item % 256) for item in self.parent.winfo_rgb(fill)) + (alpha,)
             im = Image.new(mode='RGBA', size=(x2 - x1, y2 - y1), color=fill)
             self.canvas._im_tk = ImageTk.PhotoImage(im)
-            self.canvas._draw_rect = self.canvas.create_image(x1, y1, image=self.canvas._im_tk, anchor='nw', tags='bg_mask')
+            self.canvas._draw_rect = self.canvas.create_image(x1, y1, image=self.canvas._im_tk,
+                                                              anchor='nw', tags='bg_mask')
         self.canvas._draw_rect = self.canvas.create_rectangle(x1, y1, x2, y2, tags='bg_mask', **kwargs)
 
     @staticmethod
     def RBGAImage(path):
         return Image.open(path).convert("RGBA")
+
+    def erase(self, event):
+        x, y = event.x, event.y
+        
+        markings = self.marking_controller.get_image_markings(self.image_number)
+        for marking in markings:
+            cx1, cy1, cx2, cy2 = marking['coordinates']
+            marking_id = marking['marking_id']
+            if cx1 < x < cx2 and cy1 < y < cy2:
+                self.canvas.delete(marking_id)
+                self.marking_controller.remove_marking_by_id(marking_id)
 
     def paint(self, event):
         x, y = event.x, event.y
@@ -236,19 +260,21 @@ class ImageFrame(tk.Frame):
             if hasattr(self.canvas, '_cursor_id'):
                 self.canvas.delete(self.canvas._cursor_id)
 
+        marking_id = None
         coordinates = None
         if self.old_x and self.old_y:
-            self.canvas.create_line(self.old_x, self.old_y, x, y, width=self.penwidth,
+            marking_id = self.canvas.create_line(self.old_x, self.old_y, x, y, width=self.penwidth,
                                     capstyle=tk.ROUND, smooth=True, tags='mask', stipple='gray50')
             coordinates = [self.old_x, self.old_y, x, y]
         else:
-            self.canvas.create_line(x, y, x, y, width=self.penwidth,
+            marking_id = self.canvas.create_line(x, y, x, y, width=self.penwidth,
                                     capstyle=tk.ROUND, smooth=True, tags='mask', stipple='gray50')
             coordinates = [x, y, x, y]
 
-        if coordinates:
+        if marking_id and coordinates:
             marking = {
                 'image': self.image_number,
+                'marking_id': marking_id,
                 'coordinates': coordinates,
                 'width': self.penwidth,
                 'classification': None
@@ -265,3 +291,9 @@ class ImageFrame(tk.Frame):
     def change_pen_width(self, event):
         self.penwidth = int(event)
 
+    def undo(self):
+        current_markings = self.marking_controller.get_image_markings(self.image_number)
+        if current_markings:
+            last_marking = current_markings.pop(-1)
+            self.canvas.delete(last_marking['marking_id'])
+            self.canvas.update()

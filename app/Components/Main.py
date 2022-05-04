@@ -116,6 +116,7 @@ class Main(tk.Frame):
             self.parent.title(self.default_title + ': {}'.format(filename.split('/')[-1]))  # change window title
             self.im_frame.set_canvas_image(filename)
             self.im_frame.set_canvas_markings()
+            self.sidebar.draw_button['state'] = 'normal'
         except Exception:
             msg = f'Cannot open selected file {filename}'
             logging.info(msg)
